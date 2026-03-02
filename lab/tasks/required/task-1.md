@@ -13,7 +13,49 @@ Trace a request from [`Swagger UI`](../../../wiki/swagger.md#what-is-swagger-ui)
 Before adding new features, you will deploy the system to your VM and confirm it works.
 Then you will send requests and observe how data flows through the components: browser → API → database.
 
-<!-- TODO add sequence diagram -->
+<h4>Diagram</h4>
+
+```mermaid
+sequenceDiagram
+    actor Developer
+    participant Browser as "Browser (Swagger UI)"
+    participant Caddy as "Caddy<br/>(Reverse Proxy)"
+    participant API as "FastAPI<br/>(API Server)"
+    participant DB as "PostgreSQL<br/>(Database)"
+    participant pgAdmin as "pgAdmin<br/>(DB UI)"
+
+    Note over Developer,pgAdmin: Task Flow: POST /interactions → Verify in Database
+
+    Developer->>Browser: Open Swagger UI<br/>http://vm-ip:caddy-port/docs
+    Browser->>Caddy: GET /docs
+    Caddy-->>Browser: Swagger UI HTML/JS
+
+    Note over Developer,Browser: Authorize with API_KEY
+
+    Developer->>Browser: POST /interactions<br/>{learner_id: 1, item_id: 1, kind: "attempt"}
+    Browser->>Caddy: POST /interactions<br/>Authorization: Bearer API_KEY
+    Caddy->>API: Proxy POST /interactions
+
+    API->>API: verify_api_key()
+    API->>API: Validate request body<br/>(InteractionLogCreate)
+    API->>DB: INSERT INTO interacts<br/>(learner_id, item_id, kind)<br/>RETURNING *
+
+    DB-->>API: New row:<br/>{id: 24, learner_id: 1,<br/>item_id: 1, kind: "attempt",<br/>created_at: ...}
+
+    API-->>Caddy: 201 Created<br/>JSON response
+    Caddy-->>Browser: 201 Created
+    Browser-->>Developer: Display response
+
+    Note over Developer,pgAdmin: Verification Flow: Check database in pgAdmin
+
+    Developer->>pgAdmin: Open pgAdmin<br/>http://vm-ip:pgadmin-port
+    Developer->>pgAdmin: Run SQL query:<br/>SELECT * FROM interacts<br/>ORDER BY id DESC LIMIT 5
+    pgAdmin->>DB: Execute SQL query
+    DB-->>pgAdmin: Return rows of 'interacts'
+    pgAdmin-->>Developer: Display data output<br/>(CSV format)
+
+    Note right of Developer: Verify: New row matches<br/>the Swagger UI response
+```
 
 <h4>Table of contents</h4>
 

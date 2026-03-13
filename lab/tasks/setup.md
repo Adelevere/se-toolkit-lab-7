@@ -14,7 +14,7 @@
     - [1.4.1. (UPD) Set up `VS Code`](#141-upd-set-up-vs-code)
     - [1.4.2. (UPD) Set up `Docker`](#142-upd-set-up-docker)
     - [1.4.3. (UPD) (`Windows` only) Switch to the `Linux` shell for the `VS Code Terminal`](#143-upd-windows-only-switch-to-the-linux-shell-for-the-vs-code-terminal)
-    - [1.4.4. Clean up `Docker`](#144-clean-up-docker)
+    - [1.4.4. (UPD) Clean up `Docker`](#144-upd-clean-up-docker)
     - [1.4.5. Set up `Git`](#145-set-up-git)
   - [1.5. (UPD) Open in `VS Code` the `software-engineering-toolkit` directory (LOCAL)](#15-upd-open-in-vs-code-the-software-engineering-toolkit-directory-local)
   - [1.6. Clone your fork (LOCAL)](#16-clone-your-fork-local)
@@ -152,7 +152,7 @@
 2. If it's not `bash` or `zsh`, [switch to the `Linux` shell for the `VS Code Terminal`](../../wiki/vs-code.md#windows-only-switch-to-the-linux-shell-for-the-vs-code-terminal).
 3. [Check the current shell](../../wiki/vs-code.md#check-the-current-shell-in-the-vs-code-terminal) again.
 
-#### 1.4.4. Clean up `Docker`
+#### 1.4.4. (UPD) Clean up `Docker`
 
 1. [Clean up `Docker`](../../wiki/docker.md#clean-up-docker).
 

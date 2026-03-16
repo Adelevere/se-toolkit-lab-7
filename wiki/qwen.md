@@ -3,6 +3,7 @@
 <h2>Table of contents</h2>
 
 - [What is `Qwen Code`](#what-is-qwen-code)
+- [`Qwen Code` credentials file](#qwen-code-credentials-file)
 - [Set up the `Qwen Code` (LOCAL)](#set-up-the-qwen-code-local)
   - [Set up the `Qwen Code` CLI (LOCAL)](#set-up-the-qwen-code-cli-local)
   - [Set up the `Qwen Code Companion` extension for `VS Code`](#set-up-the-qwen-code-companion-extension-for-vs-code)
@@ -32,6 +33,12 @@ See:
 - [Set up the `Qwen Code` (LOCAL)](#set-up-the-qwen-code-local).
 - [Set up the `Qwen Code` CLI (REMOTE)](./qwen-code-api.md#set-up-the-qwen-code-cli-remote).
 - [Set up the `Qwen Code` API (REMOTE)](./qwen-code-api.md).
+
+## `Qwen Code` credentials file
+
+A file where `Qwen Code` stores the credentials for the [user](./operating-system.md#user) to authenticate in the [`Qwen` API](https://qwen.ai/apiplatform).
+
+Path: `~/.qwen/oauth_creds.json`.
 
 ## Set up the `Qwen Code` (LOCAL)
 
@@ -94,6 +101,9 @@ See:
 8. [Open a chat with `Qwen Code` using the `GitHub Copilot Chat` extension for `VS Code`](#open-a-chat-with-qwen-code-using-the-github-copilot-chat-extension-for-vs-code).
 
 ## Check the `Qwen Code` credentials file
+
+> [!NOTE]
+> See [`Qwen Code` credentials file](#qwen-code-credentials-file).
 
 - Method 1: [Check the `Qwen Code` credentials file in the `VS Code Terminal`](#check-the-qwen-code-credentials-file-in-the-vs-code-editor).
 - Method 2: [Check the `Qwen Code` credentials file in the `VS Code Editor`](#check-the-qwen-code-credentials-file-in-the-vs-code-editor).

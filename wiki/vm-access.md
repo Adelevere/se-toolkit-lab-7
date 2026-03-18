@@ -384,7 +384,11 @@ Complete these steps:
    >
    > See [Set the permissions](./linux-administration.md#set-the-permissions).
 
-   <!-- TODO why these permissions are correct? -->
+   > 🟦 **Note**
+   >
+   > `SSH` refuses to use keys if the `.ssh/` directory is accessible by other users.
+   >
+   > See [Mode `700`](./linux.md#mode-700).
 
 5. To set the correct permissions on the `authorized_keys` file,
 
@@ -394,7 +398,11 @@ Complete these steps:
    chmod 600 /home/<user>/.ssh/authorized_keys
    ```
 
-   <!-- TODO why these permissions are correct? -->
+   > 🟦 **Note**
+   >
+   > `SSH` ignores `authorized_keys` if it is readable or writable by other users.
+   >
+   > See [Mode `600`](./linux.md#mode-600).
 
 ### Update the `SSH` config to connect to the VM as the user `<user>` (LOCAL)
 

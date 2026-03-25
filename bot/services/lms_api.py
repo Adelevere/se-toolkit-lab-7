@@ -10,35 +10,58 @@ class LMSAPIClient:
         self.api_key = api_key
         self.headers = {"Authorization": f"Bearer {api_key}"}
     
-    async def get_items(self) -> List[Dict[str, Any]]:
-        """Get all items (labs and tasks)"""
+    async def _get(self, endpoint: str, params: Dict = None) -> Any:
         try:
             async with httpx.AsyncClient() as client:
                 response = await client.get(
-                    f"{self.base_url}/items/",
+                    f"{self.base_url}{endpoint}",
+                    params=params,
                     headers=self.headers,
                     timeout=10.0
                 )
                 response.raise_for_status()
                 return response.json()
         except Exception as e:
-            logger.error(f"Failed to get items: {e}")
+            logger.error(f"GET {endpoint} failed: {e}")
             raise
     
-    async def get_pass_rates(self, lab_id: str) -> List[Dict[str, Any]]:
-        """Get pass rates for a specific lab"""
+    async def _post(self, endpoint: str) -> Any:
         try:
             async with httpx.AsyncClient() as client:
-                response = await client.get(
-                    f"{self.base_url}/analytics/pass-rates",
-                    params={"lab": lab_id},
+                response = await client.post(
+                    f"{self.base_url}{endpoint}",
                     headers=self.headers,
                     timeout=10.0
                 )
-                if response.status_code == 404:
-                    return []
                 response.raise_for_status()
                 return response.json()
         except Exception as e:
-            logger.error(f"Failed to get pass rates for {lab_id}: {e}")
+            logger.error(f"POST {endpoint} failed: {e}")
             raise
+    
+    async def get_items(self) -> List[Dict]:
+        return await self._get("/items/")
+    
+    async def get_learners(self) -> List[Dict]:
+        return await self._get("/learners/")
+    
+    async def get_scores(self, lab: str) -> List[Dict]:
+        return await self._get("/analytics/scores", {"lab": lab})
+    
+    async def get_pass_rates(self, lab: str) -> List[Dict]:
+        return await self._get("/analytics/pass-rates", {"lab": lab})
+    
+    async def get_timeline(self, lab: str) -> List[Dict]:
+        return await self._get("/analytics/timeline", {"lab": lab})
+    
+    async def get_groups(self, lab: str) -> List[Dict]:
+        return await self._get("/analytics/groups", {"lab": lab})
+    
+    async def get_top_learners(self, lab: str, limit: int = 5) -> List[Dict]:
+        return await self._get("/analytics/top-learners", {"lab": lab, "limit": limit})
+    
+    async def get_completion_rate(self, lab: str) -> Dict:
+        return await self._get("/analytics/completion-rate", {"lab": lab})
+    
+    async def trigger_sync(self) -> Dict:
+        return await self._post("/pipeline/sync")

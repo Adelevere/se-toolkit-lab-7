@@ -1,12 +1,5 @@
 nohup: ignoring input
-warning: The `tool.uv.dev-dependencies` field (used in `pyproject.toml`) is deprecated and will be removed in a future release; use `dependency-groups.dev` instead
-warning: `VIRTUAL_ENV=/root/se-toolkit-lab-7/venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead
 Traceback (most recent call last):
-  File "/root/se-toolkit-lab-7/bot/bot.py", line 14, in <module>
-    from handlers import start, help_command, health, labs
-  File "/root/se-toolkit-lab-7/bot/handlers/__init__.py", line 1, in <module>
-    from .commands import start, help_command, health, labs
-  File "/root/se-toolkit-lab-7/bot/handlers/commands.py", line 8
-    "��� Welcome to LMS Bot!\n\n"
-     ^
-SyntaxError: Non-UTF-8 code starting with '\xed' on line 8, but no encoding declared; see https://peps.python.org/pep-0263/ for details
+  File "/root/se-toolkit-lab-7/bot/bot.py", line 10, in <module>
+    from handlers.commands import start, help_command, health, labs
+ImportError: cannot import name 'start' from 'handlers.commands' (unknown location)

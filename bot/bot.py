@@ -7,7 +7,7 @@ from telegram import Update
 from telegram.ext import Application, CommandHandler, ContextTypes
 
 from config import Config
-from handlers.commands import start, help_command, health, labs
+from handlers.commands import start, help_command, health, labs, scores
 from services import LMSAPIClient
 
 logging.basicConfig(
@@ -36,21 +36,37 @@ async def labs_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     response = await labs(lms_client)
     await update.message.reply_text(response)
 
+async def scores_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    global lms_client
+    lab_name = ' '.join(context.args) if context.args else ''
+    response = await scores(lms_client, lab_name)
+    await update.message.reply_text(response)
+
 def test_mode(command: str):
+    """Run bot in test mode - processes command and prints output"""
     async def run_test():
         global lms_client
         lms_client = LMSAPIClient(Config.LMS_API_URL, Config.LMS_API_KEY)
         
-        if command == "/start":
+        parts = command.split()
+        cmd = parts[0]
+        arg = parts[1] if len(parts) > 1 else None
+        
+        if cmd == "/start":
             response = await start()
-        elif command == "/help":
+        elif cmd == "/help":
             response = await help_command()
-        elif command == "/health":
+        elif cmd == "/health":
             response = await health(lms_client)
-        elif command == "/labs":
+        elif cmd == "/labs":
             response = await labs(lms_client)
+        elif cmd == "/scores":
+            if not arg:
+                response = "❌ Please specify a lab name.\nExample: /scores lab-01"
+            else:
+                response = await scores(lms_client, arg)
         else:
-            response = f"Unknown command: {command}"
+            response = f"Unknown command: {cmd}\nTry /help for available commands."
         
         print(response)
         return 0
@@ -82,6 +98,7 @@ def main():
     app.add_handler(CommandHandler("help", help_handler))
     app.add_handler(CommandHandler("health", health_handler))
     app.add_handler(CommandHandler("labs", labs_handler))
+    app.add_handler(CommandHandler("scores", scores_handler))
     
     logger.info("Bot started")
     app.run_polling(allowed_updates=Update.ALL_TYPES)

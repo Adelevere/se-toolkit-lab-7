@@ -7,7 +7,7 @@ from telegram import Update
 from telegram.ext import Application, CommandHandler, ContextTypes
 
 from config import Config
-from handlers import start, help_command, health, labs
+from handlers.commands import start, help_command, health, labs
 from services import LMSAPIClient
 
 logging.basicConfig(

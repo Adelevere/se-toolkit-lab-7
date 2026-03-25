@@ -57,8 +57,8 @@ services:
 
   caddy:
     build:
-      context: ./frontend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: frontend/Dockerfile
     container_name: se-toolkit-lab-7-caddy-1
     ports:
       - "${LMS_API_HOST_PORT:-42002}:80"

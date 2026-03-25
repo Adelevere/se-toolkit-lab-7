@@ -4,7 +4,7 @@ import argparse
 import logging
 import asyncio
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes
+from telegram.ext import Application, CommandHandler, CallbackQueryHandler, MessageHandler, filters, ContextTypes
 
 from config import Config
 from handlers.commands import start, help_command, health, labs, scores
@@ -64,7 +64,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         response = await help_command()
         await query.edit_message_text(response)
 
-async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def message_handler_func(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handle text messages (natural language)"""
     global lms_client
     user_message = update.message.text
@@ -135,7 +135,7 @@ def main():
     app.add_handler(CommandHandler("labs", labs_handler))
     app.add_handler(CommandHandler("scores", scores_handler))
     app.add_handler(CallbackQueryHandler(button_handler))
-    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, message_handler))
+    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, message_handler_func))
     
     logger.info("Bot started")
     app.run_polling(allowed_updates=Update.ALL_TYPES)

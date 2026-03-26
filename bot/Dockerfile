@@ -1,18 +1,34 @@
+FROM harbor.pg.innopolis.university/docker-hub-cache/python:3.12-slim AS builder
+
+# Install uv
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+
+WORKDIR /app
+
+# Copy dependency files
+COPY pyproject.toml uv.lock ./
+
+# Use public PyPI directly (skip university mirror)
+ENV UV_INDEX_URL="https://pypi.org/simple"
+ENV UV_INDEX_STRATEGY=unsafe-best-match
+
+# Install dependencies with uv
+RUN uv sync --no-dev
+
+# Final stage
 FROM harbor.pg.innopolis.university/docker-hub-cache/python:3.12-slim
 
 WORKDIR /app
 
-# Install uv
-RUN pip install uv
+# Copy virtual environment from builder
+COPY --from=builder /app/.venv /app/.venv
 
-# Copy dependency files
-COPY bot/pyproject.toml bot/uv.lock ./
+# Copy the bot code
+COPY . .
 
-# Install dependencies
-RUN uv sync --frozen --no-dev
+# Make sure we use the virtual environment
+ENV PATH="/app/.venv/bin:$PATH"
+ENV PYTHONUNBUFFERED=1
 
-# Copy bot code
-COPY bot/ .
-
-# Run bot
-CMD ["uv", "run", "bot.py"]
+# Run the bot
+CMD ["python", "-m", "bot"]

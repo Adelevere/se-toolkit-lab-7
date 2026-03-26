@@ -1,7 +1,7 @@
 """ETL pipeline: fetch data from the autochecker API and load it into the database.
 
 The autochecker dashboard API provides two endpoints:
-- GET /api/items — lab/task catalog
+- GET /items — lab/task catalog
 - GET /api/logs  — anonymized check results (supports ?since= and ?limit= params)
 
 Both require HTTP Basic Auth (email + password from settings).
@@ -58,7 +58,7 @@ async def fetch_items() -> list[ApiItem]:
     """Fetch the lab/task catalog from the autochecker API."""
     async with httpx.AsyncClient(timeout=60) as client:
         resp = await client.get(
-            f"{settings.autochecker_api_url}/api/items",
+            f"{settings.autochecker_api_url}/items",
             auth=(settings.autochecker_email, settings.autochecker_password),
         )
         resp.raise_for_status()

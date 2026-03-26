@@ -1,13 +1,10 @@
-ARG REGISTRY_PREFIX=harbor.pg.innopolis.university/docker-hub-cache/
-FROM ${REGISTRY_PREFIX}node:25.8.0-alpine AS builder
-WORKDIR /app
-COPY package.json pnpm-lock.yaml ./
-RUN npm install -g pnpm
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
-COPY . .
-RUN pnpm run build
+FROM harbor.pg.innopolis.university/docker-hub-cache/caddy:2.11-alpine
 
-ARG REGISTRY_PREFIX=harbor.pg.innopolis.university/docker-hub-cache/
-FROM ${REGISTRY_PREFIX}caddy:2.11-alpine
-COPY --from=builder /app/dist /srv
-COPY Caddyfile /etc/caddy/Caddyfile
+# Copy Caddyfile
+COPY frontend/Caddyfile /etc/caddy/Caddyfile
+
+# Expose ports
+EXPOSE 80 443
+
+# Run Caddy
+CMD ["caddy", "run", "--config", "/etc/caddy/Caddyfile", "--adapter", "caddyfile"]

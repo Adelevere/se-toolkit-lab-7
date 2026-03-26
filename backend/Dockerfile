@@ -1,36 +1,34 @@
-ARG REGISTRY_PREFIX=harbor.pg.innopolis.university/docker-hub-cache/
-FROM ${REGISTRY_PREFIX}astral/uv:python3.14-bookworm-slim AS builder
-ENV UV_COMPILE_BYTECODE=1 UV_LINK_MODE=copy
-ENV UV_NO_DEV=1
-ENV UV_PYTHON_DOWNLOADS=0
+FROM harbor.pg.innopolis.university/docker-hub-cache/python:3.12-slim AS builder
+
+# Install uv
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
 WORKDIR /app
-RUN --mount=type=cache,target=/root/.cache/uv \
-    --mount=type=bind,source=uv.lock,target=uv.lock \
-    --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
-    --mount=type=bind,source=backend/pyproject.toml,target=backend/pyproject.toml \
-    uv sync --locked --no-install-project
 
-COPY backend /app/backend
-COPY pyproject.toml uv.lock /app/
+# Copy dependency files
+COPY pyproject.toml uv.lock ./
 
-RUN --mount=type=cache,target=/root/.cache/uv \
-    uv sync --locked
+# Use public PyPI directly (skip university mirror)
+ENV UV_INDEX_URL="https://pypi.org/simple"
+ENV UV_INDEX_STRATEGY=unsafe-best-match
 
-ARG REGISTRY_PREFIX=harbor.pg.innopolis.university/docker-hub-cache/
-FROM ${REGISTRY_PREFIX}python:3.14.2-slim-bookworm
+# Install dependencies with uv
+RUN uv sync --no-dev
 
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
-ENV LANG=C.UTF-8
+# Final stage
+FROM harbor.pg.innopolis.university/docker-hub-cache/python:3.12-slim
 
-RUN groupadd --system --gid 999 nonroot \
-    && useradd --system --gid 999 --uid 999 --create-home nonroot
+WORKDIR /app
 
-COPY --from=builder --chown=nonroot:nonroot /app /app
+# Copy virtual environment from builder
+COPY --from=builder /app/.venv /app/.venv
 
+# Copy the backend code
+COPY . .
+
+# Make sure we use the virtual environment
 ENV PATH="/app/.venv/bin:$PATH"
-USER nonroot
-WORKDIR /app
+ENV PYTHONUNBUFFERED=1
 
-CMD ["sh", "-c", "python backend/app/run.py"]
+# Run the application
+CMD ["fastapi", "run", "app/main.py", "--port", "8000", "--host", "0.0.0.0"]

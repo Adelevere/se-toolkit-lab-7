@@ -9,9 +9,9 @@ Create `.env.docker.secret` with:
 
 ```bash
 # Backend
-LMS_API_KEY=your-secret-key
-AUTOCHECKER_EMAIL=your-email@innopolis.university
-AUTOCHECKER_API_PASSWORD=your-github-usernametelegram-alias
+LMS_API_KEY=my-secret-api-key
+AUTOCHECKER_EMAIL=a.verenikina@innopolis.university
+AUTOCHECKER_API_PASSWORD=AdelevereAdele_vere
 AUTOCHECKER_API_URL=https://auche.namaz.live
 AUTOCHECKER_API_LOGIN=https://auche.namaz.live/api/login
 AUTOCHECKER_API_BASE=https://auche.namaz.live/api

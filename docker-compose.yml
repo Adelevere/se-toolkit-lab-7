@@ -1,17 +1,16 @@
 services:
   postgres:
-    image: harbor.pg.innopolis.university/docker-hub-cache/postgres:18.3-alpine
-    container_name: se-toolkit-lab-7-postgres-1
+    image: ${REGISTRY_PREFIX:-harbor.pg.innopolis.university/docker-hub-cache/}postgres:15-alpine
     environment:
-      - POSTGRES_DB=${POSTGRES_DB:-db-lab-7}
-      - POSTGRES_USER=${POSTGRES_USER:-postgres}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres}
-    ports:
-      - "${POSTGRES_HOST_PORT:-42004}:5432"
+      POSTGRES_DB: ${POSTGRES_DB:-lms}
+      POSTGRES_USER: ${POSTGRES_USER:-lms_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-secret_password}
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-lms_user} -d ${POSTGRES_DB:-lms}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -21,19 +20,20 @@ services:
 
   backend:
     build:
-      context: .
-      dockerfile: backend/Dockerfile
-    container_name: se-toolkit-lab-7-backend-1
+      context: ./backend
+      dockerfile: Dockerfile
     environment:
-      - DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-db-lab-7}
-      - LMS_API_KEY=${LMS_API_KEY}
-      - AUTOCHECKER_API_URL=${AUTOCHECKER_API_URL}
-      - AUTOCHECKER_EMAIL=${AUTOCHECKER_EMAIL}
-      - AUTOCHECKER_API_PASSWORD=${AUTOCHECKER_API_PASSWORD}
-      - AUTOCHECKER_API_LOGIN=${AUTOCHECKER_API_LOGIN}
-      - AUTOCHECKER_API_BASE=${AUTOCHECKER_API_BASE}
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: lms
+      DB_USER: lms_user
+      DB_PASSWORD: change_this_strong_password_123
+      BACKEND_NAME: ${BACKEND_NAME:-"Learning Management Service"}
+      BACKEND_DEBUG: ${BACKEND_DEBUG:-false}
+      BACKEND_RELOAD: ${BACKEND_RELOAD:-false}
+      LMS_API_KEY: ${LMS_API_KEY:-my-secret-api-key}
     ports:
-      - "${BACKEND_HOST_PORT:-42001}:8000"
+      - "42002:8000"
     depends_on:
       postgres:
         condition: service_healthy
@@ -41,56 +41,44 @@ services:
       - lms-network
     restart: unless-stopped
 
-  pgadmin:
-    image: harbor.pg.innopolis.university/docker-hub-cache/dpage/pgadmin4:latest
-    container_name: se-toolkit-lab-7-pgadmin-1
+  bot:
+    build:
+      context: ./bot
+      dockerfile: Dockerfile
     environment:
-      - PGADMIN_DEFAULT_EMAIL=${PGADMIN_EMAIL:-admin@example.com}
-      - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_PASSWORD:-admin}
-    ports:
-      - "${PGADMIN_HOST_PORT:-42003}:80"
+      BOT_TOKEN: ${BOT_TOKEN}
+      LMS_API_URL: http://backend:8000
+      LLM_API_BASE_URL: http://host.docker.internal:42005/v1
+      LLM_API_KEY: ${LLM_API_KEY}
+      LMS_API_KEY: ${LMS_API_KEY:-my-secret-api-key}
     depends_on:
-      - postgres
+      - backend
     networks:
       - lms-network
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     restart: unless-stopped
 
   caddy:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    container_name: se-toolkit-lab-7-caddy-1
+    image: ${REGISTRY_PREFIX:-harbor.pg.innopolis.university/docker-hub-cache/}caddy:2
     ports:
-      - "${LMS_API_HOST_PORT:-42002}:80"
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
     depends_on:
       - backend
     networks:
       - lms-network
     restart: unless-stopped
 
-  bot:
-    build:
-      context: .
-      dockerfile: bot/Dockerfile
-    container_name: se-toolkit-lab-7-bot-1
-    restart: unless-stopped
-    environment:
-      - BOT_TOKEN=${BOT_TOKEN}
-      - LMS_API_URL=http://backend:8000
-      - LMS_API_KEY=${LMS_API_KEY}
-      - LLM_API_KEY=${LLM_API_KEY}
-      - LLM_API_BASE_URL=http://host.docker.internal:42005/v1
-      - LLM_API_MODEL=${LLM_API_MODEL:-coder-model}
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-    depends_on:
-      - backend
-    networks:
-      - lms-network
+volumes:
+  postgres_data:
+  caddy_data:
+  caddy_config:
 
 networks:
   lms-network:
     driver: bridge
-
-volumes:
-  postgres_data:

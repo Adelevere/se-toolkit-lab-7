@@ -1,0 +1,7 @@
+{
+    email admin@localhost
+}
+
+:80 {
+    reverse_proxy backend:8000
+}

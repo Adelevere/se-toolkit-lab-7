@@ -31,6 +31,10 @@ async def unhandled_exception_handler(request: Request, exc: Exception):
         },
     )
 
+@app.get("/health")
+async def health_check():
+    return {"status": "healthy", "message": "Service is running"}
+
 
 app.add_middleware(
     CORSMiddleware,

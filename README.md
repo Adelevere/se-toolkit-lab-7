@@ -91,3 +91,70 @@ By the end of this lab, you should be able to say:
 2. [Backend Integration](./lab/tasks/required/task-2.md) — P0: slash commands + real data
 3. [Intent-Based Natural Language Routing](./lab/tasks/required/task-3.md) — P1: LLM tool use
 4. [Containerize and Document](./lab/tasks/required/task-4.md) — P3: containerize + deploy
+
+## Deploy
+
+### Prerequisites
+
+Before deploying, ensure you have the following environment files configured:
+
+1. **`.env.docker.secret`** — Docker Compose environment:
+   - `BOT_TOKEN` — Telegram bot token from @BotFather
+   - `LMS_API_KEY` — Backend API key
+   - `LLM_API_KEY` — Qwen API key
+   - `LLM_API_BASE_URL` — LLM endpoint (use `http://host.docker.internal:42005/v1`)
+   - `LLM_API_MODEL` — Model name (e.g., `coder-model`)
+
+2. **Backend running** — The bot depends on the backend service. Verify:
+
+   ```bash
+   curl -sf http://localhost:42002/docs
+   ```
+
+### Deploy commands
+
+```bash
+cd ~/se-toolkit-lab-7
+
+# Stop any running bot process (from previous nohup deployment)
+pkill -f "bot.py" 2>/dev/null
+
+# Build and start all services
+docker compose --env-file .env.docker.secret up --build -d
+
+# Check status
+docker compose --env-file .env.docker.secret ps
+```
+
+### Verify deployment
+
+```bash
+# Check bot container logs
+docker compose --env-file .env.docker.secret logs bot --tail 20
+
+# Test bot commands (from your local machine with Telegram)
+# Send these in Telegram:
+# /start — welcome message
+# /help — list of commands
+# /health — backend status
+# "what labs are available?" — natural language query
+```
+
+### Troubleshooting
+
+| Symptom | Solution |
+|---------|----------|
+| Bot container restarting | Check logs: `docker compose logs bot`. Usually missing env var or import error |
+| `/health` fails | Ensure `LMS_API_URL=http://backend:8000` (not `localhost`) |
+| LLM queries fail | `LLM_API_BASE_URL` must use `host.docker.internal` |
+| "BOT_TOKEN is required" | Add to `.env.docker.secret`, not `.env.bot.secret` |
+
+### Stop deployment
+
+```bash
+# Stop all services
+docker compose --env-file .env.docker.secret down
+
+# Stop only the bot
+docker compose --env-file .env.docker.secret stop bot
+```
